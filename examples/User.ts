@@ -19,6 +19,13 @@ function logMethod(message: string): MethodDecorator {
     }
 }
 
+function logParameter(message: string): ParameterDecorator {
+    console.log(`[Parameter 🔵] Message is: ${message}`)
+    return function (): void {
+        console.log('[Parameter 🔵] constructor')
+    }
+}
+
 @logData("Hello world")
 class User {
 
@@ -33,10 +40,10 @@ class User {
     }
 
     @logMethod("Method message")
-    public getFullName(): string {
-        return `${this.firstName} ${this.lastName}`
+    public getFullName(@logParameter("Parameter message") text: string): string {
+        return `${this.firstName} ${this.lastName} ${text}`
     }
 }
 
 const user = new User('John', 'Doe');
-user.getFullName()
+user.getFullName('!!!')
