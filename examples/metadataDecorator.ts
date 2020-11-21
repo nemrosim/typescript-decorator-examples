@@ -30,7 +30,6 @@ export function addPropertyMetadata(metadata: IPropertyMetadata): PropertyDecora
 
         console.log(`[${FLAG} 🅼 -1] All metadata: ${JSON.stringify(allMetadata, null, 2)}` )
 
-        // Ensure allMetadata has propertyKey
         allMetadata[propertyKey] = allMetadata[propertyKey] || {};
 
         console.log(`[${FLAG} 🅼 -2] All metadata:`, JSON.stringify(allMetadata, null, 2));
