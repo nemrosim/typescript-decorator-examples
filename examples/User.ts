@@ -1,7 +1,18 @@
 function logData(message: string): ClassDecorator {
     console.log(`[Class 🟢] Message is: ${message}`)
-    return function (): void {
+    return function (target: any): void {
         console.log('[Class 🟢] constructor')
+    }
+}
+
+function addProperty<T>(name: string, value: T): ClassDecorator {
+    console.log(`[Class 🟩] Add property`)
+    return function (target: any): void {
+        target.prototype[name] = value;
+        const instance = new target() as User;
+        instance.firstName = "Will"
+        instance.lastName = "Smith"
+        console.log('New user', instance)
     }
 }
 
@@ -27,6 +38,7 @@ function logParameter(message: string): ParameterDecorator {
 }
 
 @logData("Hello world")
+@addProperty<boolean>('isOld', true)
 class User {
 
     @logProperty("Property message")
@@ -40,6 +52,7 @@ class User {
     }
 
     @logMethod("Method message")
+    @logMethod("Method message 2")
     public getFullName(@logParameter("Parameter message") text: string): string {
         return `${this.firstName} ${this.lastName} ${text}`
     }
@@ -47,3 +60,6 @@ class User {
 
 const user = new User('John', 'Doe');
 user.getFullName('!!!')
+
+// @ts-ignore
+console.log('[❔] Is old?', user.isOld);
