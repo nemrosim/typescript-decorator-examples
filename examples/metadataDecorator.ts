@@ -1,6 +1,6 @@
 import { log } from "./colorConsole";
 
-export const PROPERTY_METADATA_KEY = Symbol("propertyMetadata");
+export const PROPERTY_METADATA_KEY = Symbol("propMeta");
 
 interface IPropertyMetadata {
     name?: string;
