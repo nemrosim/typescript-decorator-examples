@@ -1,48 +1,22 @@
-function logData(message: string): ClassDecorator {
-    console.log(`[Class 🟢] Message is: ${message}`)
-    return function (target: any): void {
-        console.log('[Class 🟢] constructor')
-    }
-}
-
-function addProperty<T>(name: string, value: T): ClassDecorator {
-    console.log(`[Class 🟩] Add property`)
-    return function (target: any): void {
-        target.prototype[name] = value;
-        const instance = new target() as User;
-        instance.firstName = "Will"
-        instance.lastName = "Smith"
-        console.log('New user', instance)
-    }
-}
-
-function logProperty(message: string): PropertyDecorator {
-    console.log(`[Property 🟡] Message is: ${message}`)
-    return function (): void {
-        console.log('[Property 🟡] constructor')
-    }
-}
-
-function logMethod(message: string): MethodDecorator {
-    console.log(`[Method 🟠] Message is: ${message}`)
-    return function (): void {
-        console.log('[Method 🟠] constructor')
-    }
-}
-
-function logParameter(message: string): ParameterDecorator {
-    console.log(`[Parameter 🔵] Message is: ${message}`)
-    return function (): void {
-        console.log('[Parameter 🔵] constructor')
-    }
-}
+import "reflect-metadata";
+import { addPropertyMetadata, PROPERTY_METADATA_KEY } from "./metadataDecorator";
+import { addProperty, logData, logMethod, logParameter, logProperty } from "./decorators";
 
 @logData("Hello world")
 @addProperty<boolean>('isOld', true)
-class User {
+export class User {
 
     @logProperty("Property message")
+    @addPropertyMetadata({
+        name: 'FN Name',
+        description: 'First name description',
+    })
     public firstName: string;
+
+    @addPropertyMetadata({
+        name: 'LN Name',
+        description: 'Last name description',
+    })
     public lastName: string;
 
 
@@ -61,5 +35,9 @@ class User {
 const user = new User('John', 'Doe');
 user.getFullName('!!!')
 
-// @ts-ignore
-console.log('[❔] Is old?', user.isOld);
+console.log('[❔] Is old?', (user as User & { isOld: boolean }).isOld);
+
+console.log(
+    "METADATA",
+    Reflect.getMetadata(PROPERTY_METADATA_KEY, user),
+);
