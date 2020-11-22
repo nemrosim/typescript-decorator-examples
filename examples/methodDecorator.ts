@@ -1,37 +1,67 @@
-export function methodDecoratorExample(): MethodDecorator {
+import "reflect-metadata";
+
+const REQUIRED_METADATA_KEY = Symbol("required");
+
+function required(): ParameterDecorator {
     return function (
         target: Object,
         propertyKey: string | symbol,
+        parameterIndex: number
+    ) {
+        let existingRequiredParameters: number[] =
+            Reflect.getOwnMetadata(REQUIRED_METADATA_KEY, target, propertyKey) || [];
+
+        existingRequiredParameters.push(parameterIndex);
+
+        Reflect.defineMetadata(
+            REQUIRED_METADATA_KEY,
+            existingRequiredParameters,
+            target,
+            propertyKey
+        );
+    }
+}
+
+function validate(): MethodDecorator {
+    return function (
+        target: Object,
+        propertyName: string | symbol,
         descriptor: PropertyDescriptor
     ) {
-        console.log('⚠️ DATA', {target, propertyKey, descriptor});
-
-        const original = descriptor.value;
-
-        descriptor.value = (...args: any) => {
-            if (original) {
-                const originalResult = original.apply(target, args);
-                return originalResult + 4;
+        let method = descriptor.value;
+        descriptor.value = function () {
+            let requiredParameters: number[] = Reflect.getOwnMetadata(
+                REQUIRED_METADATA_KEY,
+                target,
+                propertyName
+            );
+            if (requiredParameters) {
+                for (let parameterIndex of requiredParameters) {
+                    if (
+                        parameterIndex >= arguments.length ||
+                        arguments[parameterIndex] === undefined
+                    ) {
+                        throw new Error("Missing required argument.");
+                    }
+                }
             }
-        }
+
+            return method.apply(this, arguments);
+        };
     }
 }
 
 class Example {
 
-    @methodDecoratorExample()
-    @methodDecoratorExample()
-    calculate(a: number, b: number) {
+    @validate()
+    calculate(
+        @required() a?: any,
+        @required() b?: any
+    ) {
         return a + b;
     }
 }
 
-const descriptor: PropertyDescriptor | undefined = Object.getOwnPropertyDescriptor(
-    Example.prototype,
-    'calculate'
-);
-
-console.log('🟩 Instance result', new Example().calculate(2, 2));
-console.log('🟢 Descriptor result', descriptor?.value(2, 2));
+console.log('🟩 Result', new Example().calculate());
 
 
